@@ -73,11 +73,13 @@ class SecurityController extends AbstractController
         $success = null;
         if( $passwordEncoder->isPasswordValid($this->getUser(), $password) ){
             $em = $this->getDoctrine()->getManager();
-            $user = $em->getRepository(User::class)->findOneBy(['email'=>$this->getUser()->getUsername()]);
+            $user = $em->getRepository(User::class)->findOneBy(['name'=>$this->getUser()->getUsername()]);
             $user->setPassword($passwordEncoder->encodePassword($this->getUser(), $newPassword));
-            $em->persist($user);
-            $em->flush();
-            $success = "Mot de passe modifié avec succès";
+            if($error == '') {
+                $em->persist($user);
+                $em->flush();
+                $success = "Mot de passe modifié avec succès";
+            }
         }else{
             $error = "Mot de passe incorrect";
         }
@@ -106,7 +108,7 @@ class SecurityController extends AbstractController
      * @param UserPasswordEncoderInterface $encoder
      * @return array
      */
-    private function registerUser(Request $request, UserPasswordEncoderInterface $encoder): Response{
+    private function registerUser(Request $request, UserPasswordEncoderInterface $encoder) {
         $name = $request->request->get('name');
         $email = $request->request->get('email');
         $password = $request->request->get('password');
@@ -132,11 +134,12 @@ class SecurityController extends AbstractController
         $user->setEmail($email);
         $user->setName($name);
         $user->setPassword($encoder->encodePassword($user, $password));
-        $em->persist($user);
-        $em->flush();
+        if($error == '') {
+            $em->persist($user);
+            $em->flush();
+            $success = "Compte créé avec succès";
+        }
         $request->getSession()->set(Security::LAST_USERNAME, $email);
-
-        $success = "Compte créé avec succès";
 
         return [$success, $error];
     }
@@ -173,10 +176,16 @@ class SecurityController extends AbstractController
                 $error = "Ce compte n'existe pas.";
             $password = $this->generateRandomPassword() . $user->getId();
             $user->setPassword($encoder->encodePassword($user, $password));
+            
+            if($error == '') {
+                $em->persist($user);
+                $em->flush();
+                $success = "Votre mot de passe a été reinitialisé. Consulter votre boîte mail pour voir votre mot de passe";
+            }
 
             $url = $this->generateUrl("login");
             $_message = (new \Swift_Message("Nouveau mot de passe"))
-                ->setFrom('stephtipsbet@setphsport.com')
+                ->setFrom('stephtipbet@setphsport.com')
                 ->setTo($user->getEmail())
                 ->setBody(
                     $this->renderView(
@@ -186,10 +195,6 @@ class SecurityController extends AbstractController
                     'text/html'
                 );
             $mailer->send($_message);
-
-            $em->persist($user);
-            $em->flush();
-            $success = "Votre mot de passe a été reinitialisé. Consulter votre boîte mail pour voir votre mot de passe";
         }
         return [$success, $error];
     }

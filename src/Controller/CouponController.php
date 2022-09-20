@@ -31,8 +31,6 @@ class CouponController extends AbstractController
      * @Route("/coupon/delete/{coupon}", name="delete_coupon")
      */
     public function deleteCoupon(Coupon $coupon){
-        if($coupon->getUser()->getId() != $this->getUser()->getId())
-            return new JsonResponse(["status"=>0, "mes"=>"Accès non autorisé"], 403);
         $em = $this->getDoctrine()->getManager();
         $coupon->setIsDeleted(true);
         $em->persist($coupon);
@@ -61,7 +59,6 @@ class CouponController extends AbstractController
                 $error = "Renseignez le code du coupon";
 
             $coupon = new Coupon();
-            $coupon->setUser($this->getUser());
             $coupon->setAuteur($auteur);
             $coupon->setBookmaker($bookmaker);
             $coupon->setCode($code);
@@ -82,14 +79,17 @@ class CouponController extends AbstractController
                 $coupon->setCouponImage($couponImages);
             }
             $em = $this->getDoctrine()->getManager();
-            $em->persist($coupon);
-            $em->flush();
+            if($error == '') {
+                $em->persist($coupon);
+                $em->flush();
+                $success = "Coupon ajouté avec succès";
+            }
 
             $url = $this->generateUrl("index");
             $emails = $em->getRepository(Emails::class)->findAll();
             foreach ($emails as $user) {
                 $_message = (new \Swift_Message("Nouveau coupon disponible"))
-                    ->setFrom('stephtipsbet@setphsport.com')
+                    ->setFrom('stephtipbet@setphsport.com')
                     ->setTo($user->getEmail())
                     ->setBody(
                         $this->renderView(
@@ -98,8 +98,6 @@ class CouponController extends AbstractController
                     );
                 $mailer->send($_message);
             }
-
-            $success ="Bien ajouté avec succès";
         }
         return $this->render("coupon/new_coupon.html.twig", compact('error', 'success'));
     }

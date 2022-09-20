@@ -30,9 +30,7 @@
                                     <td>{{ coupon.bookmaker }}</td>
                                     <td>{{ coupon.Message }}</td>
                                     <td>{{ coupon.code }}</td>
-                                    {% for image in coupon.couponImage %}
-                                    <td><img src="/uploads/images/{{ image.fileName }}" class="img-fluid"></td>
-                                    {% endfor %}
+                                    <td><img src="/uploads/images/{{ coupon.couponImage[0].fileName }}" class="img-fluid"></td>
                                     <td>{{ coupon.createdAt | date('H:i:s d/m/Y')}}</td>
                                     <td><a href="{{ path('delete_coupon', {coupon: coupon.id}) }}">Supprimer</a></td>
                                 </tr>

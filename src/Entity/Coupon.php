@@ -52,15 +52,6 @@ class Coupon
      */
     private $couponImage;
 
-    /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user", referencedColumnName="id")
-     * })
-     */
-    private $user;
 
     /**
      * @var boolean
@@ -97,22 +88,6 @@ class Coupon
         $this->bookmaker = $bookmaker;
 
         return $this;
-    }
-
-    /**
-     * @return User
-     */
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    /**
-     * @param User $user
-     */
-    public function setUser(User $user): void
-    {
-        $this->user = $user;
     }
 
     /**
